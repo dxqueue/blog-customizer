@@ -16,6 +16,7 @@ import {
 	fontColors,
 	fontFamilyOptions,
 	fontSizeOptions,
+	OptionType,
 } from 'src/constants/articleProps';
 
 type Props = {
@@ -24,12 +25,12 @@ type Props = {
 };
 
 export const ArticleParamsForm = ({ defaultValues, onApply }: Props) => {
-	const [menuOpen, setMenuOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [formState, setFormState] = useState(defaultValues);
 	const asideRef = useRef<HTMLElement | null>(null);
 
 	const handleToggle = () => {
-		setMenuOpen((prev) => !prev);
+		setIsMenuOpen((prev) => !prev);
 	};
 
 	useEffect(() => {
@@ -38,30 +39,23 @@ export const ArticleParamsForm = ({ defaultValues, onApply }: Props) => {
 				asideRef.current &&
 				!asideRef.current.contains(event.target as Node)
 			) {
-				setMenuOpen(false);
+				setIsMenuOpen(false);
 			}
 		};
 
-		if (menuOpen) {
+		if (isMenuOpen) {
 			document.addEventListener('mousedown', handleClick);
 		}
 
 		return () => {
 			document.removeEventListener('mousedown', handleClick);
 		};
-	});
-
-	const handleChange = (key: keyof ArticleStateType, value: any) => {
-		setFormState((prev) => ({
-			...prev,
-			[key]: value,
-		}));
-	};
+	}, [isMenuOpen]);
 
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
 		onApply(formState);
-		setMenuOpen(false);
+		setIsMenuOpen(false);
 	};
 
 	const handleReset = () => {
@@ -69,12 +63,18 @@ export const ArticleParamsForm = ({ defaultValues, onApply }: Props) => {
 		onApply(defaultArticleState);
 	};
 
+	const handleChange = (key: keyof ArticleStateType) => {
+		return (value: OptionType) => {
+			setFormState({ ...formState, [key]: value });
+		};
+	};
+
 	return (
 		<>
-			<ArrowButton isOpen={menuOpen} onClick={handleToggle} />
+			<ArrowButton isOpen={isMenuOpen} onClick={handleToggle} />
 			<aside
 				className={clsx(styles.container, {
-					[styles.container_open]: menuOpen,
+					[styles.container_open]: isMenuOpen,
 				})}
 				ref={asideRef}>
 				<form
@@ -88,20 +88,20 @@ export const ArticleParamsForm = ({ defaultValues, onApply }: Props) => {
 						<Select
 							selected={formState.fontFamilyOption}
 							options={fontFamilyOptions}
-							onChange={(value) => handleChange('fontFamilyOption', value)}
+							onChange={handleChange('fontFamilyOption')}
 							title='Шрифт'
 						/>
 						<RadioGroup
 							name=''
 							options={fontSizeOptions}
 							selected={formState.fontSizeOption}
-							onChange={(value) => handleChange('fontSizeOption', value)}
+							onChange={handleChange('fontSizeOption')}
 							title='Размер шрифта'
 						/>
 						<Select
 							selected={formState.fontColor}
 							options={fontColors}
-							onChange={(value) => handleChange('fontColor', value)}
+							onChange={handleChange('fontColor')}
 							title='Цвет шрифта'
 						/>
 					</div>
@@ -110,13 +110,13 @@ export const ArticleParamsForm = ({ defaultValues, onApply }: Props) => {
 						<Select
 							selected={formState.backgroundColor}
 							options={backgroundColors}
-							onChange={(value) => handleChange('backgroundColor', value)}
+							onChange={handleChange('backgroundColor')}
 							title='Цвет фона'
 						/>
 						<Select
 							selected={formState.contentWidth}
 							options={contentWidthArr}
-							onChange={(value) => handleChange('contentWidth', value)}
+							onChange={handleChange('contentWidth')}
 							title='Ширина контента'
 						/>
 					</div>
